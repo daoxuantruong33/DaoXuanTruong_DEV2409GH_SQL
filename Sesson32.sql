@@ -885,15 +885,29 @@ VALUES
     (N'C99', N'Nguyễn Trần', N'Quân', 1, GETDATE(), N'Huế', N'CT', 950000, NULL);
 
 --- 5. Thêm vào bảng kết quả gồm các thông tin sau:  
-INSERT INTO [dbo].[KetQua] ([MaSV], [MaMH], [Diem]) 
-SELECT SV.MaSV, N'06', 7 
-FROM [dbo].[SinhVien] SV
-WHERE SV.MaKH = N'TH';
+
+MERGE [dbo].[Ketqua] AS target
+USING (SELECT [MaSV], N'06' AS MaMH, 7 AS Diem
+       FROM [dbo].[SinhVien]
+       WHERE [MaKH] = N'TH') AS source
+ON target.MaSV = source.MaSV AND target.MaMH = source.MaMH
+WHEN MATCHED THEN
+    UPDATE SET target.Diem = source.Diem
+WHEN NOT MATCHED THEN
+    INSERT (MaSV, MaMH, Diem)
+    VALUES (source.MaSV, source.MaMH, source.Diem);
+
+
+
 
 --- 6. Thêm vào bảng kết quả gồm các thông tin sau: 
-INSERT INTO [dbo].[KetQua] ([MaSV], [MaMH], [Diem]) 
-SELECT N'C02', MH.MaMH, 8 
-FROM [dbo].[MonHoc] MH;
+MERGE INTO [dbo].[Ketqua] AS target
+USING (SELECT [MaMH], 8 AS Diem FROM [dbo].[MonHoc]) AS source
+ON target.MaSV = N'C02' AND target.MaMH = source.MaMH
+WHEN MATCHED THEN 
+    UPDATE SET Diem = source.Diem
+WHEN NOT MATCHED THEN 
+    INSERT (MaSV, MaMH, Diem) VALUES (N'C02', source.MaMH, source.Diem);
 
 --- Bài 7: Xoá thông tin trong cơ sở dữ liệu 
 
@@ -1033,5 +1047,4 @@ SELECT * FROM SinhVien
 SELECT * FROM MonHoc
 SELECT * FROM Khoa
 SELECT * FROM Ketqua
-
 
