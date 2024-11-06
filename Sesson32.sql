@@ -1041,6 +1041,180 @@ SET Diem = CASE
 END
 WHERE MaMH = N'03'; -- Giả sử mã môn Cơ sở dữ liệu là '03'
 
+--- LAB 05
+--- BÀI 1: TẠO CÁC VIEW VỚI YÊU CẦU SAU
+--- 1. Liệt kê các sinh viên có học bổng lớn hơn 100,000 và sinh ở Tp HCM, gồm các  thông tin: Họ tên sinh viên, Mã khoa, Nơi sinh, Học bổng.  
+CREATE VIEW vw_Hocbong
+AS
+SELECT HoSV + ' ' + TenSV AS HoTenSinhVien, MaKH, NoiSinh, HocBong
+FROM Sinhvien
+WHERE HocBong > 100000 AND NoiSinh = N'Hà Nội';
+SELECT*FROM vw_Hocbong
+
+--- 2. Danh sách các sinh viên của khoa Anh văn và khoa Triết, gồm các thông tin: Mã  sinh viên, Mã khoa, Phái.  
+CREATE VIEW VW_SinhVien_KhoaAnhVan_Trieu AS
+SELECT MaSV, MaKH, Phai
+FROM Sinhvien
+WHERE MaKH IN (SELECT MaKH FROM Khoa WHERE TenKH IN (N'Anh văn', N'Triết'));
+SELECT*FROM VW_SinhVien_KhoaAnhVan_Trieu
+
+--- 3. Cho biết những sinh viên có ngày sinh từ ngày 01/01/1986 đến ngày  05/06/1992, gồm các thông tin: Mã sinh viên, Ngày sinh, Nơi sinh, Học bổng.  
+CREATE VIEW SinhVien_NgaySinh_1986_1992 AS
+SELECT MaSV, NgaySinh, NoiSinh, HocBong
+FROM Sinhvien
+WHERE NgaySinh BETWEEN '1986-01-01' AND '1992-06-05';
+SELECT*FROM SinhVien_NgaySinh_1986_1992
+
+--- 4. Danh sách những sinh viên có học bổng từ 200,000 đến 800,000, gồm các thông  tin: Mã sinh viên, Ngày sinh, Phái, Mã khoa.  
+CREATE VIEW SinhVien_HocBong_200000_800000 AS
+SELECT MaSV, NgaySinh, Phai, MaKH, HocBong
+FROM Sinhvien
+WHERE HocBong BETWEEN 200000 AND 800000;
+SELECT*FROM SinhVien_HocBong_200000_800000
+
+
+--- 5. Cho biết những môn học có số tiết lớn hơn 40 và nhỏ hơn 60, gồm các thông  tin: Mã môn học, Tên môn học, Số tiết. 
+CREATE VIEW MonHoc_SoTiet_40_60 AS
+SELECT MaMH, TenMH, SoTiet
+FROM Monhoc
+WHERE SoTiet BETWEEN 40 AND 60;
+SELECT*FROM MonHoc_SoTiet_40_60
+
+--- 6. Liệt kê những sinh viên nam của khoa Anh văn, gồm các thông tin: Mã sinh viên,  Họ tên sinh viên, Phái.  
+CREATE VIEW VW_SinhVienNam_KhoaAnhVan AS
+SELECT MaSV, HoSV + ' ' + TenSV AS HoTenSinhVien, Phai
+FROM Sinhvien
+WHERE MaKH = (SELECT MaKH FROM Khoa WHERE TenKH = N'Anh văn') AND Phai = '0';
+SELECT * FROM VW_SinhVienNam_KhoaAnhVan
+
+--- 7. Danh sách sinh viên có nơi sinh ở Hà Nội và ngày sinh sau ngày 01/01/1990,  gồm các thông tin: Họ sinh viên, Tên sinh viên, Nơi sinh, Ngày sinh.  
+CREATE VIEW VW_SinhVien_HaNoi_NgaySinhSau_1990 
+AS
+SELECT HoSV, TenSV, NoiSinh, NgaySinh
+FROM Sinhvien
+WHERE NoiSinh = N'Hà Nội' AND NgaySinh > '1990-01-01';
+SELECT * FROM VW_SinhVien_HaNoi_NgaySinhSau_1990
+
+--- 8. Liệt kê những sinh viên nữ, tên có chứa chữ N.  
+CREATE VIEW SinhVienNu_TenChuaN AS
+SELECT HoSV + ' ' + TenSV AS HoTenSinhVien
+FROM Sinhvien
+WHERE Phai = '1' AND TenSV LIKE '%N%';
+SELECT * FROM SinhVienNu_TenChuaN
+
+--- 9. Danh sách các nam sinh viên khoa Tin Học có ngày sinh sau ngày 30/5/1986. 
+CREATE VIEW SinhVienNam_KhoaTinHoc_NgaySinhSau1986 
+AS
+SELECT MaSV, HoSV + ' ' + TenSV AS HoTenSinhVien
+FROM Sinhvien
+WHERE Phai = '0' AND MaKH = (SELECT MaKH FROM Khoa WHERE TenKH = N'Tin Học') AND NgaySinh > '1986-05-30';
+SELECT * FROM SinhVienNam_KhoaTinHoc_NgaySinhSau1986 
+
+--- 10. Liệt kê danh sách sinh viên gồm các thông tin sau: Họ và tên sinh viên, Giới tính,  Ngày sinh. Trong đó Giới tính hiển thị ở dạng Nam/Nữ tuỳ theo giá trị của field  Phai là True hay False.  
+CREATE VIEW SinhVien_HoTen_GioiTinh_NgaySinh AS
+SELECT HoSV + ' ' + TenSV AS HoTenSinhVien, 
+       CASE WHEN Phai = 'True' THEN '0' ELSE '1' END AS GioiTinh, 
+       NgaySinh
+FROM Sinhvien;
+SELECT * FROM SinhVien_HoTen_GioiTinh_NgaySinh
+
+--- 11. Cho biết danh sách sinh viên gồm các thôngtin sau: Mã sinh viên, Tuổi, Nơi sinh,  Mã khoa. Trong đó Tuổi sẽ được tính bằng cách lấy năm hiện hành trừ cho năm  sinh  
+CREATE VIEW SinhVien_Tuoi_NoiSinh_MaKH AS
+SELECT MaSV, YEAR(GETDATE()) - YEAR(NgaySinh) AS Tuoi, NoiSinh, MaKH
+FROM Sinhvien;
+SELECT * FROM SinhVien_Tuoi_NoiSinh_MaKH
+
+
+--- 12. Danh sách những sinh viên có tuổi từ 20 đến 30, thông tin gồm: Họ tên sinh  viên, Tuổi, Tên khoa 
+CREATE VIEW SinhVien_Tuoi_20_30 AS
+SELECT HoSV + ' ' + TenSV AS HoTenSinhVien
+		, YEAR(GETDATE()) - YEAR(NgaySinh) AS Tuoi
+		, Khoa.TenKH
+FROM Sinhvien
+JOIN Khoa ON Sinhvien.MaKH = Khoa.MaKH
+WHERE YEAR(GETDATE()) - YEAR(NgaySinh) BETWEEN 20 AND 30;
+SELECT * FROM SinhVien_Tuoi_20_30
+
+
+--- 13. Cho biết thông tin về mức học bổng của các sinh viên, gồm: Mã sinh viên, Phái,  Mã khoa, Mức học bổng. Trong đó, mức học bổng sẽ hiển thị là “Học bổng cao”  nếu giá trị của field học bổng lớn hơn 500,000 và ngược lại hiển thị là “Mức  trung bình”  
+
+
+--- 14. Danh sách sinh viên của khoa Anh văn, điều kiện lọc phải sử dụng tên khoa, gồm  các thông tin sau: Họ tên sinh viên, Giới tính, Tên khoa. Trong đó, Giới tính sẽ  hiển thị dạng Nam/Nữ  
+
+
+--- 15. Liệt kê bảng điểm của sinh viên khoa Tin Học, gồm các thông tin:Tên khoa, Họ  tên sinh viên, Tên môn học, Số tiết, Điểm  
+
+
+--- 16. Kết quả học tập của sinh viên, gồm các thông tin: Họ tên sinh viên, Mã khoa,  Tên môn học, Điểm thi, Loại. Trong đó, Loại sẽ là Giỏi nếu điểm thi > 8, từ 6 đến  8 thì Loại là Khá, nhỏ hơn 6 thì loại là Trung Bình 
+
+
+--- 17. Cho biết học bổng cao nhất của từng khoa, gồm Mã khoa, Tên khoa, Học bổng  cao nhất  
+
+
+--- 18. Thống kê số sinh viên học của từng môn, thông tin có: Mã môn, Tên môn, Số  sinh viên đang học 
+
+
+--- 19. Cho biết môn nào có điểm thi cao nhất, gồm các thông tin: Tên môn, Số tiết,  Tên sinh viên, Điểm  
+
+
+--- 20. Cho biết khoa nào có đông sinh viên nhất, gồm Mã khoa, Tên khoa, Tổng số sinh  viên  
+
+
+--- 21. Cho biết khoa nào có sinh viên lảnh học bổng cao nhất, gồm các thông tin sau:  Tên khoa, Họ tên sinh viên, Học bổng  
+
+
+--- 22. Cho biết sinh viên của khoa Tin học có có học bổng cao nhất, gồm các thông tin:  Mã sinh viên, Họ sinh viên, Tên sinh viên, Tên khoa, Học bổng  
+
+
+--- 23. Cho biết sinh viên nào có điểm môn Cơ sở dữ liệu lớn nhất, gồm thông tin: Họ  sinh viên, Tên môn, Điểm 
+
+
+--- 24. Cho biết 3 sinh viên có điểm thi môn Đồ hoạthấp nhất, thông tin: Họ tên sinh  viên, Tên khoa, Tên môn, Điểm  
+
+
+--- 25. Cho biết nào có nhiều sinh viên nữ nhất, gồm các thông tin: Mã khoa, Tên khoa  
+
+
+--- 26. Thống kê sinh viên theo khoa, gồm các thông tin: Mã khoa, Tên khoa, Tổng số  sinh viên, Tổng số sinh viên nữ  
+
+
+--- 27. Cho biết kết quả học tập của sinh viên, gồm Họ tên sinh viên, Tên khoa, Kết quả.  Trong đó, Kết quả sẽ là Đậu nếu không có môn nào có điểm nhỏ hơn 4  
+
+
+--- 28. Danh sách những sinh viên không có môn nào nhỏ hơn 4 điểm, gồm các thông  tin: Họ tên sinh viên, Tên khoa, Phái  
+
+
+--- 29. Cho biết danh sách những môn không có điểm thi nhỏ hơn 4, gồm các thông  tin: Mã môn, Tên Môn  
+
+
+--- 30. Cho biết những khoa không có sinh viên rớt, sinh viên rớt nếu điểm thi của môn  nhỏ hơn 5, gồm các thông tin: Mã khoa, Tên khoa 
+
+
+--- 31. Thống kê số sinh viên đậu và số sinh viên rớt của từng môn, biết răng sinh viên  rớt khi điểm của môn nhỏ hơn 5, gồm có: Mã môn, Tên môn, Số sinh viên đậu,  Số sinh viên rớt 
+
+
+--- 32. Cho biết môn nào không có sinh viên rớt, gồm có: Mã môn, Tên môn 
+
+
+--- 33. Danh sách sinh viên không có môn nào rớt, thông tin gồm: Mã sinh viên, Họ tên,  Mã khoa  
+
+
+--- 34. Danh sách các sinh viên rớt trên 2 môn, gồm Mã sinh viên, Họ sinh viên, Tên  sinh viên, Mã khoa  
+
+
+--- 35. Cho biết danh sách những khoa có nhiều hơn 10 sinh viên, gồm Mã khoa, Tên  khoa, Tổng số sinh viên của khoa  
+
+
+--- 36. Danh sách những sinh viên thi nhiều hơn 4 môn, gồm có Mã sinh viên, Họ tên  sinh viên, Số môn thi  
+
+
+--- 37. Cho biết khoa có 5 sinh viên nam trở lên, thông tin gồm có: Mã khoa, Tên khoa,  Tổng số sinh viên nam  
+
+
+--- 38. Danh sách những sinh viên có trung bình điểm thi lớn hơn 4, gồm các thông tin  sau: Họ tên sinh viên, Tên khoa, Phái, Điểm trung bình các môn  
+
+
+--- 39. Cho biết trung bình điểm thi của từng môn, chỉ lấy môn nào có trung bình điểm  thi lớn hơn 6, thông tin gồm có: Mã môn, Tên môn, Trung bình điểm
 
 
 SELECT * FROM SinhVien
